@@ -1,12 +1,8 @@
 import { useState } from "react";
+import { Task } from "../types";
 
 interface AddTaskFormProps {
-  addTask: (task: {
-    title: string;
-    time: string;
-    description: string;
-    category: string;
-  }) => void;
+  addTask: (task: Task) => void;
   closeForm: () => void;
 }
 
@@ -16,13 +12,24 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ addTask, closeForm }) => {
     time: "",
     description: "",
     category: "Undone",
+    dueDate: "",
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (task.title.trim()) {
-      addTask(task);
-      setTask({ title: "", time: "", description: "", category: "Undone" });
+      addTask({
+        id: Date.now(), // Tambahkan ID unik
+        ...task,
+        dueDate: task.dueDate || new Date().toISOString().split("T")[0], // Default dueDate jika kosong
+      });
+      setTask({
+        title: "",
+        time: "",
+        description: "",
+        category: "Undone",
+        dueDate: "",
+      });
       closeForm();
     }
   };

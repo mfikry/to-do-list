@@ -1,28 +1,25 @@
 import React from "react";
+import { Task } from "../types";
 
 interface TaskItemProps {
-  onClick: () => void;
-  title: string;
-  time: string;
-  description: string;
+  task: Task;
+  setSelectedTask: (task: Task) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({
-  onClick,
-  title,
-  time,
-  description,
-}) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, setSelectedTask }) => {
   return (
     <div
       className="w-86 mt-4 bg-white rounded-2xl shadow-lg p-4 ml-1 cursor-pointer hover:bg-gray-100"
-      onClick={onClick}
+      onClick={() => {
+        setSelectedTask(task);
+      }}
     >
       <div className="flex justify-between">
-        <li className="text-xl font-bold">{title}</li>
-        <p className="text-xs text-gray-700 mt-1">{time}</p>
+        <li className="text-xl font-bold">{task.title}</li>
+        <p className="text-xs text-gray-700 mt-1">{task.time}</p>
       </div>
-      <p className="text-gray-600 pl-7">{description}</p>
+      <p className="text-gray-600 pl-7">{task.description}</p>
+      <p className="text-gray-500 text-sm mt-2 ml-7">Due: {task.dueDate}</p>
     </div>
   );
 };

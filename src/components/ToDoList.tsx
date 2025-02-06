@@ -1,31 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TaskFilter from "./TaskFilter";
 import TaskItem from "./TaskItem";
 import AddTaskForm from "./AddTaskForm";
 import { CiSearch } from "react-icons/ci";
 import { SlCalender } from "react-icons/sl";
 import TaskDetail from "./TaskDetail";
+import { Task } from "../types";
 
 const ToDoList = () => {
   const [activeButton, setActiveButton] = useState("Undone");
-  const [tasks, setTasks] = useState<
-    { title: string; time: string; description: string; category: string }[]
-  >([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<{
-    title: string;
-    time: string;
-    description: string;
-    category: string;
-  } | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  useEffect(() => {
+    const savedTasks = localStorage.getItem("tasks");
+    if (savedTasks) {
+      try {
+        const parsedTasks = JSON.parse(savedTasks);
+        if (Array.isArray(parsedTasks)) {
+          setTasks(parsedTasks);
+        }
+      } catch (error) {
+        console.error("Error parsing tasks from localStorage:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   // Tambahkan task baru ke state
-  const addTask = (newTask: {
-    title: string;
-    time: string;
-    description: string;
-    category: string;
-  }) => {
+  const addTask = (newTask: Task) => {
     setTasks([...tasks, newTask]);
   };
 
@@ -33,13 +40,18 @@ const ToDoList = () => {
   const filteredTasks = tasks.filter((task) => task.category === activeButton);
 
   // Hapus task yang sudah selesai
-  const markAsDone = (taskToRemove: {
-    title: string;
-    time: string;
-    description: string;
-  }) => {
-    setTasks(tasks.filter((task) => task !== taskToRemove));
+  const markAsDone = (taskToRemove: Task) => {
+    const updatedTasks = tasks.filter((task) => task.id !== taskToRemove.id);
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks)); // Simpan ke localStorage
     setSelectedTask(null); // Tutup modal
+  };
+
+  const updateTask = (updatedTask: Task) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+    );
+    setSelectedTask(null);
   };
 
   const today = new Date();
@@ -74,13 +86,11 @@ const ToDoList = () => {
         {/* Daftar Task yang Sesuai dengan Filter */}
         <div className="overflow-auto">
           {filteredTasks.length > 0 ? (
-            filteredTasks.map((task, index) => (
+            filteredTasks.map((task) => (
               <TaskItem
-                key={index}
-                title={task.title}
-                time={task.time}
-                description={task.description}
-                onClick={() => setSelectedTask(task)}
+                key={task.id}
+                task={task}
+                setSelectedTask={setSelectedTask}
               />
             ))
           ) : (
@@ -103,12 +113,14 @@ const ToDoList = () => {
       {showForm && (
         <AddTaskForm addTask={addTask} closeForm={() => setShowForm(false)} />
       )}
+
       {/* Modal Task Detail */}
       {selectedTask && (
         <TaskDetail
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           markAsDone={markAsDone}
+          updateTask={updateTask}
         />
       )}
     </div>
