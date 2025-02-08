@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TaskFilter from "./TaskFilter";
 import TaskItem from "./TaskItem";
 import AddTaskForm from "./AddTaskForm";
@@ -13,6 +13,8 @@ const ToDoList = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
+  const isFirstLoad = useRef(true); // Tambahkan useRef untuk mendeteksi pertama kali
+
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");
     if (savedTasks) {
@@ -22,13 +24,20 @@ const ToDoList = () => {
           setTasks(parsedTasks);
         }
       } catch (error) {
-        console.error("Error parsing tasks from localStorage:", error);
+        console.error("Error parsing tasks from LocalStorage:", error);
       }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false; // Set false setelah pertama kali render
+      return;
+    }
+
+    if (tasks.length > 0) {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
   }, [tasks]);
 
   // Tambahkan task baru ke state
@@ -39,19 +48,19 @@ const ToDoList = () => {
   // Filter task sesuai dengan kategori yang dipilih
   const filteredTasks = tasks.filter((task) => task.category === activeButton);
 
+  const updateTask = (updatedTask: Task) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+    );
+    setSelectedTask(null);
+  };
+
   // Hapus task yang sudah selesai
   const markAsDone = (taskToRemove: Task) => {
     const updatedTasks = tasks.filter((task) => task.id !== taskToRemove.id);
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks)); // Simpan ke localStorage
     setSelectedTask(null); // Tutup modal
-  };
-
-  const updateTask = (updatedTask: Task) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-    );
-    setSelectedTask(null);
   };
 
   const today = new Date();
