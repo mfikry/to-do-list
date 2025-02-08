@@ -9,7 +9,7 @@ interface TaskItemProps {
 const TaskItem: React.FC<TaskItemProps> = ({ task, setSelectedTask }) => {
   return (
     <div
-      className="w-86 mt-4 bg-white rounded-2xl shadow-lg p-4 ml-1 cursor-pointer hover:bg-gray-100"
+      className="w-86 mt-4 bg-white rounded-2xl shadow-lg shadow-gray-400 p-4 ml-1 cursor-pointer hover:bg-gray-100"
       onClick={() => {
         setSelectedTask(task);
       }}
@@ -19,7 +19,9 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, setSelectedTask }) => {
         <p className="text-xs text-gray-700 mt-1">{task.time}</p>
       </div>
       <p className="text-gray-600 pl-7">{task.description}</p>
-      <p className="text-gray-500 text-sm mt-2 ml-7">Due: {task.dueDate}</p>
+      <p className="text-gray-500 text-sm mt-2 ml-7">
+        Due: {task.dueDate || "No deadline"}
+      </p>
     </div>
   );
 };

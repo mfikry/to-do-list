@@ -3,9 +3,10 @@ import TaskFilter from "./TaskFilter";
 import TaskItem from "./TaskItem";
 import AddTaskForm from "./AddTaskForm";
 import { CiSearch } from "react-icons/ci";
-import { SlCalender } from "react-icons/sl";
+
 import TaskDetail from "./TaskDetail";
 import { Task } from "../types";
+import CalendarView from "./CalendarView";
 
 const ToDoList = () => {
   const [activeButton, setActiveButton] = useState("Undone");
@@ -14,6 +15,7 @@ const ToDoList = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const isFirstLoad = useRef(true); // Tambahkan useRef untuk mendeteksi pertama kali
+  const [searchQuery, setSearchQuery] = useState(""); // Tambah state untuk search
 
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");
@@ -46,7 +48,11 @@ const ToDoList = () => {
   };
 
   // Filter task sesuai dengan kategori yang dipilih
-  const filteredTasks = tasks.filter((task) => task.category === activeButton);
+  const filteredTasks = tasks
+    .filter((task) => task.category === activeButton)
+    .filter(
+      (task) => task.title.toLowerCase().includes(searchQuery.toLowerCase()) //  Filter berdasarkan search query
+    );
 
   const updateTask = (updatedTask: Task) => {
     setTasks((prevTasks) =>
@@ -72,19 +78,25 @@ const ToDoList = () => {
   }).format(today);
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-5 min-h-screen">
-      <div className="w-100 bg-gray-200 rounded-2xl shadow-lg max-w-md p-6">
+    <div className="flex flex-col items-center space-y-4 p-6 ">
+      <div className="w-105 bg-gray-200 rounded-2xl shadow-lg shadow-cyan-500/50 max-w-md p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Today</h2>
-          <SlCalender />
+          <CalendarView tasks={tasks} />
         </div>
         <p className="text-gray-600 text-sm">{formattedDate}</p>
 
-        {/* Tombol Search */}
-        <button className="flex justify-center text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-full text-sm px-5 py-2.5 w-full mt-4">
-          <CiSearch className="size-5" />
-          Search
-        </button>
+        {/* Input Search */}
+        <div className="relative mt-4">
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-2 pl-10 border rounded-full  bg-gray-400"
+          />
+          <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2" />
+        </div>
 
         {/* Komponen Filter */}
         <TaskFilter
@@ -93,7 +105,7 @@ const ToDoList = () => {
         />
 
         {/* Daftar Task yang Sesuai dengan Filter */}
-        <div className="overflow-auto">
+        <div className="max-h-110 overflow-x-hidden overflow-y-aut">
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => (
               <TaskItem

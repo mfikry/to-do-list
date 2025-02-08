@@ -18,10 +18,15 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ addTask, closeForm }) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (task.title.trim()) {
+      // Konversi format dueDate ke DD-MM-YYYY
+      const formattedDueDate = task.dueDate
+        ? new Date(task.dueDate).toLocaleDateString("id-ID") // Format ke DD-MM-YYYY (Indonesia)
+        : new Date().toLocaleDateString("id-ID"); // Jika kosong, gunakan tanggal hari ini
+
       addTask({
         id: Date.now(), // Tambahkan ID unik
         ...task,
-        dueDate: task.dueDate || new Date().toISOString().split("T")[0], // Default dueDate jika kosong
+        dueDate: formattedDueDate || new Date().toISOString().split("T")[0], // Default dueDate jika kosong, Simpan dalam format DD-MM-YYYY
       });
       setTask({
         title: "",
@@ -49,6 +54,13 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ addTask, closeForm }) => {
             onChange={(e) => setTask({ ...task, title: e.target.value })}
             className="w-full p-2 border rounded mb-2"
             required
+          />
+          {/*  Input Due Date */}
+          <input
+            type="date"
+            value={task.dueDate} // Pakai task.dueDate langsung
+            onChange={(e) => setTask({ ...task, dueDate: e.target.value })} //  Update di state task
+            className="w-full p-2 border rounded mb-2"
           />
           <input
             type="time"

@@ -28,7 +28,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
         {!showEditForm ? (
           <>
             <h2 className="text-xl font-bold">{task.title}</h2>
-            <p className="text-gray-600 text-sm mt-2">{task.time}</p>
+            <div className="flex justify-between">
+              <p className="text-gray-500 text-sm">
+                Due: {task.dueDate || "No deadline"}
+              </p>
+              <p className="text-gray-600 text-sm">{task.time}</p>
+            </div>
             <p className="mt-4">{task.description}</p>
 
             <div className="flex justify-between mt-6 gap-4">
