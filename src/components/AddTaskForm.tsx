@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Task } from "../types";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 interface AddTaskFormProps {
   addTask: (task: Task) => void;
@@ -17,24 +19,29 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ addTask, closeForm }) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (task.title.trim()) {
-      // Konversi format dueDate ke DD-MM-YYYY
+      // Konversi `dueDate` ke format `DD-MM-YYYY`
       const formattedDueDate = task.dueDate
-        ? new Date(task.dueDate).toLocaleDateString("id-ID") // Format ke DD-MM-YYYY (Indonesia)
-        : new Date().toLocaleDateString("id-ID"); // Jika kosong, gunakan tanggal hari ini
+        ? format(new Date(task.dueDate), "dd-MM-yyyy", { locale: id })
+        : format(new Date(), "dd-MM-yyyy", { locale: id }); // Jika kosong, pakai tanggal hari ini
 
       addTask({
-        id: Date.now(), // Tambahkan ID unik
+        id: Date.now(), // Atau gunakan `crypto.randomUUID()` jika ingin lebih unik
         ...task,
-        dueDate: formattedDueDate || new Date().toISOString().split("T")[0], // Default dueDate jika kosong, Simpan dalam format DD-MM-YYYY
+        dueDate: formattedDueDate, // Simpan dalam format DD-MM-YYYY
+        time: task.time || "00:00", // Tambahkan default jika kosong
       });
+
+      // Reset form setelah submit
       setTask({
         title: "",
-        time: "",
-        description: "",
+        time: task.time || "00:00",
+        description: task.description || "",
         category: "Undone",
         dueDate: "",
       });
+
       closeForm();
     }
   };

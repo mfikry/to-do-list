@@ -21,7 +21,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
   return (
     <div
-      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50"
+      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.90)" }}
     >
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -32,7 +32,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               <p className="text-gray-500 text-sm">
                 Due: {task.dueDate || "No deadline"}
               </p>
-              <p className="text-gray-600 text-sm">{task.time}</p>
+              <p>{task.time || "No time set"}</p>
             </div>
             <p className="mt-4">{task.description}</p>
 

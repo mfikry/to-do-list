@@ -1,33 +1,47 @@
 import { useState } from "react";
 import { CalendarIcon } from "@heroicons/react/24/outline";
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameDay,
-} from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import TaskDetail from "./TaskDetail"; // Import TaskDetail
 
 interface Task {
   id: number;
   title: string;
-  dueDate: string; // Format: "YYYY-MM-DD"
+  dueDate: string; // Format: "DD-MM-YYYY"
+  description?: string;
+  time: string;
+  category: string;
 }
 
 interface CalendarProps {
   tasks: Task[];
+  markAsDone: (task: Task) => void;
+  updateTask: (task: Task) => void;
 }
 
-const CalendarView: React.FC<CalendarProps> = ({ tasks }) => {
+const CalendarView: React.FC<CalendarProps> = ({
+  tasks,
+  markAsDone,
+  updateTask,
+}) => {
   const [showCalendar, setShowCalendar] = useState(false);
-  const currentMonth = new Date();
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null); // State untuk task terpilih
 
+  const currentMonth = new Date();
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentMonth),
     end: endOfMonth(currentMonth),
   });
 
   const toggleCalendar = () => setShowCalendar(!showCalendar);
+
+  // Handle klik tanggal merah
+  const handleDateClick = (date: string) => {
+    const tasksForDate = tasks.filter((task) => task.dueDate === date);
+
+    if (tasksForDate.length > 0) {
+      setSelectedTask(tasksForDate[0]); // Pilih task pertama
+    }
+  };
 
   return (
     <div className="relative inline-block">
@@ -41,21 +55,36 @@ const CalendarView: React.FC<CalendarProps> = ({ tasks }) => {
             {format(currentMonth, "MMMM yyyy")}
           </h3>
           <div className="grid grid-cols-7 gap-2 text-center">
-            {daysInMonth.map((day) => (
-              <div
-                key={day.toISOString()}
-                className="relative p-2 border rounded"
-              >
-                {format(day, "d")}
-                {tasks.some((task) =>
-                  isSameDay(new Date(task.dueDate), day)
-                ) && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                )}
-              </div>
-            ))}
+            {daysInMonth.map((day) => {
+              const formattedDay = format(day, "dd-MM-yyyy"); // Format tanggal agar cocok
+              const hasTask = tasks.some(
+                (task) => task.dueDate === formattedDay
+              );
+
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={`relative border rounded p-1 cursor-pointer ${
+                    hasTask ? "bg-red-500 text-white" : "hover:bg-gray-200"
+                  }`}
+                  onClick={() => hasTask && handleDateClick(formattedDay)}
+                >
+                  {format(day, "d")}
+                </div>
+              );
+            })}
           </div>
         </div>
+      )}
+
+      {/* Modal Task Detail */}
+      {selectedTask && (
+        <TaskDetail
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          markAsDone={markAsDone}
+          updateTask={updateTask}
+        />
       )}
     </div>
   );

@@ -3,7 +3,8 @@ import TaskFilter from "./TaskFilter";
 import TaskItem from "./TaskItem";
 import AddTaskForm from "./AddTaskForm";
 import { CiSearch } from "react-icons/ci";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import TaskDetail from "./TaskDetail";
 import { Task } from "../types";
 import CalendarView from "./CalendarView";
@@ -14,8 +15,8 @@ const ToDoList = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const isFirstLoad = useRef(true); // Tambahkan useRef untuk mendeteksi pertama kali
-  const [searchQuery, setSearchQuery] = useState(""); // Tambah state untuk search
+  const isFirstLoad = useRef(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");
@@ -33,7 +34,7 @@ const ToDoList = () => {
 
   useEffect(() => {
     if (isFirstLoad.current) {
-      isFirstLoad.current = false; // Set false setelah pertama kali render
+      isFirstLoad.current = false;
       return;
     }
 
@@ -42,16 +43,15 @@ const ToDoList = () => {
     }
   }, [tasks]);
 
-  // Tambahkan task baru ke state
   const addTask = (newTask: Task) => {
     setTasks([...tasks, newTask]);
+    toast.success("Task added successfully!");
   };
 
-  // Filter task sesuai dengan kategori yang dipilih
   const filteredTasks = tasks
     .filter((task) => task.category === activeButton)
-    .filter(
-      (task) => task.title.toLowerCase().includes(searchQuery.toLowerCase()) //  Filter berdasarkan search query
+    .filter((task) =>
+      task.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   const updateTask = (updatedTask: Task) => {
@@ -59,14 +59,15 @@ const ToDoList = () => {
       prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
     setSelectedTask(null);
+    toast.success("Task updated successfully!");
   };
 
-  // Hapus task yang sudah selesai
   const markAsDone = (taskToRemove: Task) => {
     const updatedTasks = tasks.filter((task) => task.id !== taskToRemove.id);
     setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks)); // Simpan ke localStorage
-    setSelectedTask(null); // Tutup modal
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    setSelectedTask(null);
+    toast.success("Task marked as done!");
   };
 
   const today = new Date();
@@ -78,34 +79,39 @@ const ToDoList = () => {
   }).format(today);
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-6 ">
+    <div
+      className="flex justify-center items-center min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: "url('/images/bg.jpg')" }}
+    >
+      <ToastContainer />
       <div className="w-105 bg-gray-200 rounded-2xl shadow-lg shadow-cyan-500/50 max-w-md p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Today</h2>
-          <CalendarView tasks={tasks} />
+          <CalendarView
+            tasks={tasks}
+            markAsDone={markAsDone}
+            updateTask={updateTask}
+          />
         </div>
         <p className="text-gray-600 text-sm">{formattedDate}</p>
 
-        {/* Input Search */}
         <div className="relative mt-4">
           <input
             type="text"
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-2 pl-10 border rounded-full  bg-gray-400"
+            className="w-full p-2 pl-10 border rounded-full bg-gray-400"
           />
           <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2" />
         </div>
 
-        {/* Komponen Filter */}
         <TaskFilter
           activeButton={activeButton}
           setActiveButton={setActiveButton}
         />
 
-        {/* Daftar Task yang Sesuai dengan Filter */}
-        <div className="max-h-110 overflow-x-hidden overflow-y-aut">
+        <div className="max-h-110 overflow-x-hidden">
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => (
               <TaskItem
@@ -119,7 +125,6 @@ const ToDoList = () => {
           )}
         </div>
 
-        {/* Tombol Add New Task */}
         <div className="w-full px-2 pt-4">
           <button
             onClick={() => setShowForm(true)}
@@ -130,12 +135,10 @@ const ToDoList = () => {
         </div>
       </div>
 
-      {/* Tampilkan Form jika showForm true */}
       {showForm && (
         <AddTaskForm addTask={addTask} closeForm={() => setShowForm(false)} />
       )}
 
-      {/* Modal Task Detail */}
       {selectedTask && (
         <TaskDetail
           task={selectedTask}
